@@ -62,7 +62,7 @@ public class Astar {
             int best = selectBest(openList);       //select best board
 
             Board board = openList.remove(best);   //remove board
-
+            boardsSearched ++;
             closedList.addLast(board);             //add board to closed list
 
             if (goal(board))                       //if board is goal
@@ -90,6 +90,8 @@ public class Astar {
                     }
                 }
             }
+            System.out.println("Total swaps: " + board.gvalue);
+            System.out.println("Boards searched: " + boardsSearched);
         }
 
         System.out.println("no solution");
@@ -301,6 +303,7 @@ public class Astar {
 
     //Method displays board
     private void displayBoard(Board board, PrintWriter out) {
+        if(out != null){
         for (int i = 0; i < size; i++) //print each element of board
         {
             for (int j = 0; j < size; j++){
@@ -310,6 +313,7 @@ public class Astar {
             out.println();
             }
         }
-        System.out.println();
+        System.out.println();}
+       
     }
 }

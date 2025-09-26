@@ -30,8 +30,9 @@ public class AstarTester{
                 solver.solve(out);
                 long endTime = System.nanoTime();
                 long duration = (endTime - startTime)/1000000; //this converts it to miliseconds
-                System.out.println("Runtime is: " + duration);
-                out.println("Runtime is: " + duration);
+                System.out.println("Runtime is: " + duration + " milliseconds");
+                out.println("Runtime is: " + duration + " milliseconds");
+                
                 
                 out.close();
         }catch(Exception e){
