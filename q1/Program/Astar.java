@@ -1,319 +1,276 @@
+
 import java.util.LinkedList;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Scanner;
 
 public class Astar {
-    private int fopt;                       //f value optioins: 1, 2, or 3
-    private int hopt;
+    private int fopt; // f value options: 1, 2, or 3
+    private int hopt; // heuristic options: 1 or 2
+    private int size;
 
-//This program solves sliding puzzle using A* algorithm
+    private Board initial; // initial board
+    private Board goal;    // goal board
 
-    //Board class (inner class)
+    // Inner Board class
     private class Board {
-        private char[][] array;                 //board array
-        private int gvalue;                     //path cost
-        private int hvalue;                     //heuristic value
-        private int fvalue;                     //gvalue plus hvalue
-        private Board parent;                   //parent board
-                      //h value options: 1 or 2
+        private int[][] array;
+        private int gvalue;
+        private int hvalue;
+        private int fvalue;
+        private Board parent;
 
-        //Constructor of board class
-        private Board(char[][] array, int size) {//added a new parameter called fopt which is the f value options
-            this.array = new char[size][size];  //create board array
-
-            for (int i = 0; i < size; i++)      //copy given array
+        private Board(int[][] array, int size) {
+            this.array = new int[size][size];
+            for (int i = 0; i < size; i++)
                 for (int j = 0; j < size; j++)
                     this.array[i][j] = array[i][j];
-
-
-
-            this.parent = null;                 //no parent
+            this.parent = null;
         }
     }
 
-    private Board initial;                         //initial board
-    private Board goal;                            //goal board
-    private int size;                              //board size
-
-    //Constructor of SlidingAstar class
-    public Astar(char[][] initial, char[][] goal, int size, int fopt, int hopt) {
+    // Constructor
+    public Astar(int[][] initial, int[][] goal, int size, int fopt, int hopt) {
         this.size = size;
-        this.fopt = fopt;   //create initial f value
-        this.hopt = hopt;   //create initial h value
-        this.initial = new Board(initial, size);   //create initial board
-        this.goal = new Board(goal, size);         //create goal board
-
-
+        this.fopt = fopt;
+        this.hopt = hopt;
+        this.initial = new Board(initial, size);
+        this.goal = new Board(goal, size);
     }
 
-    //Method solves sliding puzzle
-    
+    // Solve method
     public void solve(PrintWriter out) {
-        LinkedList<Board> openList = new LinkedList<Board>();  //open list
-        LinkedList<Board> closedList = new LinkedList<Board>();//closed list
+        LinkedList<Board> openList = new LinkedList<>();
+        LinkedList<Board> closedList = new LinkedList<>();
+        openList.addFirst(initial);
 
-        openList.addFirst(initial);   //add initial board to open list
+        int boardsSearched = 0;
 
-        int totalSwaps = 0;      //initialize swaps
-        int boardsSearched = 0;  //initialize boards searched
+        long startTime = System.nanoTime();
 
+        while (!openList.isEmpty()) {
+            int best = selectBest(openList);
+            Board board = openList.remove(best);
+            boardsSearched++;
+            closedList.addLast(board);
 
-        while (!openList.isEmpty())   //while open list has more boards
-        {
-            int best = selectBest(openList);       //select best board
+            if (goal(board)) {
+                displayPath(board, out);
+                long endTime = System.nanoTime();
+                long duration = (endTime - startTime) / 1_000_000;
+                System.out.println("Total swaps: " + board.gvalue);
+                System.out.println("Boards searched: " + boardsSearched);
+                System.out.println("Runtime: " + duration + " ms");
+                out.println("Total swaps: " + board.gvalue);
+                out.println("Boards searched: " + boardsSearched);
+                out.println("Runtime: " + duration + " ms");
+                return;
+            }
 
-            Board board = openList.remove(best);   //remove board
-            boardsSearched ++;
-            closedList.addLast(board);             //add board to closed list
-
-            if (goal(board))                       //if board is goal
-            {
-                displayPath(board, null);                //display path to goal
-                return;                            //stop search
-            } else                                   //if board is not goal
-            {
-                LinkedList<Board> children = generate(board);//create children
-
-                for (int i = 0; i < children.size(); i++) {                                     //for each child
-                    Board child = children.get(i);
-
-                    if (!exists(child, closedList))   //if child is not in closed list
-                    {
-                        if (!exists(child, openList))//if child is not in open list
-                            openList.addLast(child); //add to open list
-                        else {                            //if child is already in open list
-                            int index = find(child, openList);
-                            if (child.fvalue < openList.get(index).fvalue) {                            //if fvalue of new copy
-                                openList.remove(index);  //is less than old copy
-                                openList.addLast(child); //replace old copy
-                            }                            //with new copy
+            LinkedList<Board> children = generate(board);
+            for (Board child : children) {
+                if (!exists(child, closedList)) {
+                    if (!exists(child, openList)) {
+                        openList.addLast(child);
+                    } else {
+                        int index = find(child, openList);
+                        if (child.fvalue < openList.get(index).fvalue) {
+                            openList.remove(index);
+                            openList.addLast(child);
                         }
                     }
                 }
             }
-            System.out.println("Total swaps: " + board.gvalue);
-            System.out.println("Boards searched: " + boardsSearched);
         }
 
-        System.out.println("no solution");
-       //no solution if there are
-    }                                                  //no boards in open list
+        System.out.println("No solution found");
+        out.println("No solution found");
+    }
 
-    //Method creates children of a board
+    // Generate children boards
     private LinkedList<Board> generate(Board board) {
         int i = 0, j = 0;
         boolean found = false;
-
-        for (i = 0; i < size; i++)              //find location of empty slot
-        {                                       //of board
+        for (i = 0; i < size && !found; i++)
             for (j = 0; j < size; j++)
-                if (board.array[i][j] == '0') {
+                if (board.array[i][j] == 0) {
                     found = true;
                     break;
                 }
+        i--; // adjust because loop incremented
 
-            if (found)
-                break;
-        }
-
-        boolean north, south, east, west;       //decide whether empty slot
-        north = i == 0 ? false : true;          //has N, S, E, W neighbors
-        south = i == size - 1 ? false : true;
-        east = j == size - 1 ? false : true;
-        west = j == 0 ? false : true;
-
-        LinkedList<Board> children = new LinkedList<Board>();//list of children
-
-        if (north) children.addLast(createChild(board, i, j, 'N', fopt, hopt)); //add N, S, E, W
-        if (south) children.addLast(createChild(board, i, j, 'S', fopt, hopt)); //children if
-        if (east) children.addLast(createChild(board, i, j, 'E', fopt, hopt));  //they exist
-        if (west) children.addLast(createChild(board, i, j, 'W', fopt, hopt));
-
-        return children;                        //return children
+        boolean north = i > 0, south = i < size - 1, west = j > 0, east = j < size - 1;
+        LinkedList<Board> children = new LinkedList<>();
+        if (north) children.addLast(createChild(board, i, j, 'N'));
+        if (south) children.addLast(createChild(board, i, j, 'S'));
+        if (east) children.addLast(createChild(board, i, j, 'E'));
+        if (west) children.addLast(createChild(board, i, j, 'W'));
+        return children;
     }
 
-    //Method creates a child of a board by swapping empty slot in a
-    //given direction
-    private Board createChild(Board board, int i, int j, char direction, int fopt, int hopt) {
-        Board child = copy(board);                   //create copy of board
-
-        if (direction == 'N')                        //swap empty slot to north
-        {
-            child.array[i][j] = child.array[i - 1][j];
-            child.array[i - 1][j] = '0';
-        } else if (direction == 'S')                   //swap empty slot to south
-        {
-            child.array[i][j] = child.array[i + 1][j];
-            child.array[i + 1][j] = '0';
-        } else if (direction == 'E')                   //swap empty slot to east
-        {
-            child.array[i][j] = child.array[i][j + 1];
-            child.array[i][j + 1] = '0';
-        } else                                         //swap empty slot to west
-        {
-            child.array[i][j] = child.array[i][j - 1];
-            child.array[i][j - 1] = '0';
+    // Create child board
+    private Board createChild(Board board, int i, int j, char direction) {
+        Board child = copy(board);
+        switch (direction) {
+            case 'N': child.array[i][j] = child.array[i-1][j]; child.array[i-1][j] = 0; break;
+            case 'S': child.array[i][j] = child.array[i+1][j]; child.array[i+1][j] = 0; break;
+            case 'E': child.array[i][j] = child.array[i][j+1]; child.array[i][j+1] = 0; break;
+            case 'W': child.array[i][j] = child.array[i][j-1]; child.array[i][j-1] = 0; break;
         }
 
-        if(fopt ==3) {
-            child.gvalue = board.gvalue + 1;             //parent path cost plus one
-
-            if(hopt ==1){
-                child.hvalue = heuristic_M(child);
-            }
-            else{
-                child.hvalue = heuristic_D(child);
-            }
-
-            child.fvalue = child.gvalue + child.hvalue;  //gvalue plus hvalue
-
-            child.parent = board;
-        }
-        else if(fopt == 2){
-            child.gvalue = board.gvalue + 1;
-            child.fvalue = child.gvalue;
-        }
-        else if(fopt == 1){
-            child.hvalue = heuristic_M(child);
+        child.gvalue = board.gvalue + 1;
+        if (fopt == 1) {
+            child.hvalue = (hopt == 1) ? heuristic_M(child) : heuristic_D(child);
             child.fvalue = child.hvalue;
-            child.gvalue = board.gvalue+1; //This tracks the amount of swaps since everytime we go to a new board the cost is 1, count the total number for the gvalue and that is the total number of swaps
-        }                                                                               //assign parent to child
+        } else if (fopt == 2) {
+            child.fvalue = child.gvalue;
+        } else if (fopt == 3) {
+            child.hvalue = (hopt == 1) ? heuristic_M(child) : heuristic_D(child);
+            child.fvalue = child.gvalue + child.hvalue;
+        }
 
-        return child;                                //return child
+        child.parent = board;
+        return child;
     }
 
-    //Method computes heuristic value of board based on misplaced values
+    // Heuristics
     private int heuristic_M(Board board) {
-        int value = 0;                               //initial heuristic value
-
-        for (int i = 0; i < size; i++)               //go thru board and
-            for (int j = 0; j < size; j++)           //count misplaced values
-                if (board.array[i][j] != goal.array[i][j])
-                    value += 1;
-
-        return value;                                //return heuristic value
-    }
-
-    //Method computes heuristic value of board
-    //Heuristic value is the sum of taxi distances of misplaced values
-    private int heuristic_D(Board board) {
-        //initial heuristic value
         int value = 0;
-
-        //go thru board
         for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++)
-                //if value mismatches in goal board
-                if (board.array[i][j] != goal.array[i][j]) {
-                    //locate value in goal board
-                    int x = 0, y = 0;
-                    boolean found = false;
-                    for (x = 0; x < size; x++) {
-                        for (y = 0; y < size; y++)
-                            if (goal.array[x][y] == board.array[i][j]) {
-                                found = true;
-                                break;
-                            }
-                        if (found)
-                            break;
-                    }
-
-                        //find city distance between two locations
-                        value += (int) Math.abs(x - i) + (int) Math.abs(y - j);
-
-
-                }
-
-        //return heuristic value
+                if (board.array[i][j] != 0 && board.array[i][j] != goal.array[i][j]) value++;
         return value;
     }
 
-    //Method locates the board with minimum fvalue in a list of boards
-    private int selectBest(LinkedList<Board> list) {
-        int minValue = list.get(0).fvalue;           //initialize minimum
-        int minIndex = 0;                            //value and location
-
-        for (int i = 0; i < list.size(); i++) {
-            int value = list.get(i).fvalue;
-            if (value < minValue)                    //updates minimums if
-            {                                        //board with smaller
-                minValue = value;                    //fvalue is found
-                minIndex = i;
-            }
-        }
-
-        return minIndex;                             //return minimum location
+    private int heuristic_D(Board board) {
+        int value = 0;
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
+                if (board.array[i][j] != 0 && board.array[i][j] != goal.array[i][j]) {
+                    int val = board.array[i][j];
+                    for (int x = 0; x < size; x++)
+                        for (int y = 0; y < size; y++)
+                            if (goal.array[x][y] == val)
+                                value += Math.abs(x-i) + Math.abs(y-j);
+                }
+        return value;
     }
 
-    //Method creates copy of a board
+    private int selectBest(LinkedList<Board> list) {
+        int minIndex = 0;
+        int minValue = list.get(0).fvalue;
+        for (int i = 1; i < list.size(); i++)
+            if (list.get(i).fvalue < minValue) {
+                minValue = list.get(i).fvalue;
+                minIndex = i;
+            }
+        return minIndex;
+    }
+
     private Board copy(Board board) {
         return new Board(board.array, size);
     }
 
-    //Method decides whether a board is goal
     private boolean goal(Board board) {
-        return identical(board, goal);           //compare board with goal
+        return identical(board, goal);
     }
 
-    //Method decides whether a board exists in a list
     private boolean exists(Board board, LinkedList<Board> list) {
-        for (int i = 0; i < list.size(); i++)    //compare board with each
-            if (identical(board, list.get(i)))   //element of list
-                return true;
-
+        for (Board b : list) if (identical(board, b)) return true;
         return false;
     }
 
-    //Method finds location of a board in a list
     private int find(Board board, LinkedList<Board> list) {
-        for (int i = 0; i < list.size(); i++)    //compare board with each
-            if (identical(board, list.get(i)))   //element of list
-                return i;
-
+        for (int i = 0; i < list.size(); i++) if (identical(board, list.get(i))) return i;
         return -1;
     }
 
-    //Method decides whether two boards are identical
-    private boolean identical(Board p, Board q) {
+    private boolean identical(Board a, Board b) {
         for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++)
-                if (p.array[i][j] != q.array[i][j])
-                    return false;      //if there is a mismatch then false
-
-        return true;                   //otherwise true
+                if (a.array[i][j] != b.array[i][j]) return false;
+        return true;
     }
 
-
-
-    //Method displays path from initial to current board
     private void displayPath(Board board, PrintWriter out) {
-        LinkedList<Board> list = new LinkedList<Board>();
-
-        Board pointer = board;         //start at current board
-
-        while (pointer != null)        //go back towards initial board
-        {
-            list.addFirst(pointer);    //add boards to beginning of list
-
-            pointer = pointer.parent;  //keep going back
+        LinkedList<Board> path = new LinkedList<>();
+        Board pointer = board;
+        while (pointer != null) {
+            path.addFirst(pointer);
+            pointer = pointer.parent;
         }
-        //print boards in list
-        for (int i = 0; i < list.size(); i++)
-            displayBoard(list.get(i), out);
+        for (Board b : path) displayBoard(b, out);
     }
 
-    //Method displays board
     private void displayBoard(Board board, PrintWriter out) {
-        if(out != null){
-        for (int i = 0; i < size; i++) //print each element of board
-        {
-            for (int j = 0; j < size; j++){
-                System.out.print(board.array[i][j] + '0');
-                out.print(board.array[i][j] + '0');
-            System.out.println();
-            out.println();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                sb.append(String.format("%2d ", board.array[i][j]));
+            }
+            sb.append("\n");
+        }
+        System.out.print(sb.toString() + "\n");
+        if (out != null) out.print(sb.toString() + "\n");
+    }
+
+    // Main method reads input file
+    // Main method reads input file
+    public static void main(String[] args) throws FileNotFoundException {
+        Scanner console = new Scanner(System.in);
+        System.out.print("Enter input filename: ");
+        String inputFile = console.nextLine().trim();
+        System.out.print("Enter output filename: ");
+        String outputFile = console.nextLine().trim();
+
+        // input file is in the current project folder
+        Scanner sc = new Scanner(new File(inputFile));
+
+        // output goes into the Output folder
+        File outputDir = new File("Output");
+        if (!outputDir.exists()) {
+            outputDir.mkdir(); // create folder if it doesn’t exist
+        }
+        PrintWriter out = new PrintWriter("Output/" + outputFile);
+
+        // Read puzzle size
+        int size = sc.nextInt();
+
+        // Initialize boards
+        int[][] start = new int[size][size];
+        int[][] goal = new int[size][size];
+
+        // Read initial board
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                start[i][j] = sc.nextInt();
             }
         }
-        System.out.println();}
-       
+
+        // Read goal board
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                goal[i][j] = sc.nextInt();
+            }
+        }
+
+        // Read options
+        int fopt = sc.nextInt();
+        int hopt = sc.nextInt();
+
+        // Create solver
+        Astar solver = new Astar(start, goal, size, fopt, hopt);
+
+        System.out.println("Initial Puzzle:");
+        solver.displayPath(solver.initial, out); // display initial puzzle
+
+        System.out.println("\nSolving...\n");
+        solver.solve(out);
+
+        out.close();
+        sc.close();
+        console.close();
     }
+
 }
