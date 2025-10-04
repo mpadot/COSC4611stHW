@@ -1,4 +1,4 @@
-
+package q1.Program;
 import java.util.LinkedList;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -225,14 +225,11 @@ public class Astar {
         String outputFile = console.nextLine().trim();
 
         // input file is in the current project folder
-        Scanner sc = new Scanner(new File(inputFile));
+        
 
         // output goes into the Output folder
-        File outputDir = new File("Output");
-        if (!outputDir.exists()) {
-            outputDir.mkdir(); // create folder if it doesn’t exist
-        }
-        PrintWriter out = new PrintWriter("Output/" + outputFile);
+        Scanner sc = new Scanner(new File("q1/Output/" + inputFile));
+        PrintWriter out = new PrintWriter("q1/Output/" + outputFile);
 
         // Read puzzle size
         int size = sc.nextInt();
