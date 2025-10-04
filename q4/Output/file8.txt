@@ -1,0 +1,18 @@
+16
+
+w   b   5   b   e   w   w   w   w   8   o   w   w   w   w   w
+w   w   w   w   w   w   b   w   w   w   w   b   w   w   w   w
+o  13   w   b   w   w   w   w  15   w   e   w   w   w   w   w
+w   w   w   w   w   w   b   w   w   w   w   w   8   b   w   b
+w   w   w   w   w   w   w   w   w   w   w   w   w   w   e   w
+10  w   w   b   w   7   w   w   e   w   w   w   5   w   w   w
+w   w   w   w   w   w   w   w   b   w   b   w   w   w   w   w
+w   4   w   w   w  10   w   w   w   w   w   w   w   1   w   w
+w   e   e   w   w   w   w   w   w   w   w   w   w   w   w   w
+w   w   w   b   w   w   w   8   w   w   w   w   b   w   w   6
+w   w   w   w   w   w   w   w   w   w   w   w   w   w   b   w
+b   w  14   w   w   b   w   o   w   7   w   w   w   w   o   w
+w   w   w   w   w   w   w   w   w   w   w   w   w   w   w   w
+6   o   w   w   9   w   w   3   w   w   w   o   w   w   w   w
+w   b   w   e   w   w  11   b   w   w   w   b   w   3   w   w
+b   w   w   w   b   w   o   w   w  14   w   w   w   w   w   2

@@ -103,28 +103,19 @@ public class sudoku {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        Scanner sc = new Scanner(System.in);
+        Scanner console = new Scanner(System.in);
 
         System.out.print("Enter input filename: ");
-        String inputFile = sc.nextLine();
+        String inputFile = console.nextLine();
 
         System.out.print("Enter output filename: ");
-        String outputFile = sc.nextLine();
+        String outputFile = console.nextLine();
 
-        Scanner in = new Scanner(new File(inputFile));
-        // Get the current working directory (Program/)
-        File currentDir = new File(System.getProperty("user.dir"));
+        // Automatically look inside the Output folder for input
+        Scanner in = new Scanner(new File("q4/Output/" + inputFile));
 
-        // Build the path to ../Output relative to currentDir
-        File outputDir = new File(currentDir, "../Output");
-
-        // Ensure the folder exists
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
-        }
-
-// Create the output file inside Output folder
-PrintWriter out = new PrintWriter(new File(outputDir.getAbsolutePath(), outputFile));
+        // Create the output file inside the same Output folder
+        PrintWriter out = new PrintWriter(new File("q4/Output/" + outputFile));
 
         int size = in.nextInt();
         String[][] board = new String[size][size];
@@ -136,6 +127,7 @@ PrintWriter out = new PrintWriter(new File(outputDir.getAbsolutePath(), outputFi
         }
 
         sudoku solver = new sudoku(board, size);
+
         System.out.println("Initial Puzzle:");
         solver.display(out);
 
@@ -144,6 +136,6 @@ PrintWriter out = new PrintWriter(new File(outputDir.getAbsolutePath(), outputFi
 
         out.close();
         in.close();
-        sc.close();
+        console.close();
     }
 }

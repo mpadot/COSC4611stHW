@@ -1,0 +1,20 @@
+  8   w   b   o   w   5   w   w   w 
+  w   e   w   2   w   w   w   7   w 
+  b   3   w   w   b   w   9   w   w 
+  w   4   b   w   w   w   b   o   1 
+  w   w   w   w   e   b   w   6   w 
+  w   w   5   w   w   w   w   b   b 
+  7   b   e   b   w   2   w   w   w 
+  w   w   w   w   w   o   b   4   w 
+  2   w   3   w   w   b   w   w   w 
+
+  8   1   b   3   7   5   4   2   6 
+  4   6   9   2   1   8   3   7   5 
+  b   3   2   4   b   6   9   1   8 
+  3   4   b   5   2   7   b   9   1 
+  1   2   7   8   4   b   5   6   3 
+  9   8   5   1   6   3   2   b   b 
+  7   b   4   b   3   2   6   5   9 
+  6   5   1   7   8   9   b   4   2 
+  2   9   3   6   5   b   1   8   7 
+
